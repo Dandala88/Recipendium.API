@@ -1,6 +1,7 @@
 using Core.HttpDynamo;
 using Core.JwtBuilder;
 using Microsoft.AspNetCore.Mvc;
+using Recipendium.API.Models;
 using System.Security.Claims;
 
 namespace Recipendium.API.Controllers
@@ -25,11 +26,19 @@ namespace Recipendium.API.Controllers
         {
             try
             {
+                var token = JwtTokenGenerator.GenerateToken(_config, new List<Claim>() );
+                var wprmSites = new List<string>();
 
-                var token = JwtTokenGenerator.GenerateToken(_config, new[] { new Claim("source", "portfolio") });
-                var resourceGroupList = await HttpDynamo.GetRequestAsync<List<string>>(_httpClientFactory, "https://recipeparser20221210093759.azurewebsites.net/Ingredients/WPRM", token, null);
+                var searchResults = await HttpDynamo.GetRequestAsync<SearchResponse>(_httpClientFactory, "https://searchcustomgoogle20221208153914.azurewebsites.net/CustomGoogle?q=" + q, token, null);
 
-                return Ok();
+                if (searchResults != null)
+                {
+                    var searchArr = searchResults.Items.ToArray();
+
+                    wprmSites = await HttpDynamo.PostRequestAsync<List<string>>(_httpClientFactory, "https://recipeparser20221210093759.azurewebsites.net/Ingredients/WPRM", token, searchArr, null);
+                }
+
+                return Ok(wprmSites);
             }
             catch(Exception ex)
             {
