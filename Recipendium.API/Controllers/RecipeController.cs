@@ -27,7 +27,7 @@ namespace Recipendium.API.Controllers
             try
             {
                 var token = JwtTokenGenerator.GenerateToken(_config, new List<Claim>() );
-                var wprmSites = new List<string>();
+                var wprmSites = new List<WPRMResult>();
 
                 var searchResults = await HttpDynamo.GetRequestAsync<SearchResponse>(_httpClientFactory, "https://searchcustomgoogle20221208153914.azurewebsites.net/CustomGoogle?q=" + q, token, null);
 
@@ -35,7 +35,7 @@ namespace Recipendium.API.Controllers
                 {
                     var searchArr = searchResults.Items.ToArray();
 
-                    wprmSites = await HttpDynamo.PostRequestAsync<List<string>>(_httpClientFactory, "https://recipeparser20221210093759.azurewebsites.net/Ingredients/WPRM", token, searchArr, null);
+                    wprmSites = await HttpDynamo.PostRequestAsync<List<WPRMResult>>(_httpClientFactory, "https://recipeparser20221210093759.azurewebsites.net/Ingredients/WPRM", token, searchArr, null);
                 }
 
                 return Ok(wprmSites);
