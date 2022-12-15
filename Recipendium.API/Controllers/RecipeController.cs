@@ -22,14 +22,17 @@ namespace Recipendium.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] string q)
+        public async Task<IActionResult> Get([FromQuery] string q, [FromQuery] int? limit)
         {
             try
             {
                 var token = JwtTokenGenerator.GenerateToken(_config, new List<Claim>() );
                 var wprmSites = new List<WPRMResult>();
 
-                var searchResults = await HttpDynamo.GetRequestAsync<SearchResponse>(_httpClientFactory, "https://searchcustomgoogle20221208153914.azurewebsites.net/CustomGoogle?q=" + q, token, null);
+                if (limit == null)
+                    limit = 100;
+
+                var searchResults = await HttpDynamo.GetRequestAsync<SearchResponse>(_httpClientFactory, "https://searchcustomgoogle20221208153914.azurewebsites.net/CustomGoogle?q=" + q + "&limit=" + limit, token, null);
 
                 if (searchResults != null)
                 {
